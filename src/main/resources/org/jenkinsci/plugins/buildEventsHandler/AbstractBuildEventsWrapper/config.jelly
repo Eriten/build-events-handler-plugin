@@ -1,5 +1,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:entry title="${%Groovy String}" field="groovyString">
-    <f:textbox default = "${descriptor.getGroovyString(instance)}" placeholder = "${descriptor.getGroovyString(instance)}"/>
+    <f:textarea
+        default = "${descriptor.getGroovyString(instance)}"
+        placeholder = "${descriptor.getGroovyString(instance)}"
+        codemirror-mode="clike"
+        codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true"
+    />
   </f:entry>
 </j:jelly>
