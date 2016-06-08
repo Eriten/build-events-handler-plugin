@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.buildEventsHandler;
 
+import groovy.lang.GroovyShell;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.*;
@@ -33,6 +34,11 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
     }
 
     @Override
+    public void makeBuildVariables(AbstractBuild build, Map<String, String> variables) {
+        variables.put("buildEventGroovyScript", getGroovyString());
+    }
+
+    @Override
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         Map<String, String> envVars = getEnvVars(build, listener);
         StringBuilder builder = new StringBuilder();
@@ -63,6 +69,17 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
         }
 
         logger.severe("2. preCheckout: " + builder.toString());
+
+        GroovyShell shell = new GroovyShell();
+        shell.setVariable("out", listener.getLogger());
+
+        for (Map.Entry<String, String> entry : envVars.entrySet()) {
+            shell.setVariable("$" + entry.getKey(), entry.getValue());
+        }
+
+        Object shellOutput = shell.evaluate(this.getGroovyString());
+
+        // Need to check shellOutput for boolean, number or null
     }
 
     @DataBoundConstructor
