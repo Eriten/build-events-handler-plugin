@@ -15,7 +15,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AbstractBuildEventsWrapper extends BuildWrapper {
-    private final String groovyString;
+    private final String buildStartGroovyScript;
+    private final String preScmGroovyScript;
+    private final String buildStepsStartGroovyScript;
+    private final String buildStepsFinishGroovyScript;
+    private final String buildFinishGroovyScript;
     private static final Logger logger = Logger.getLogger(AbstractBuildEventsWrapper.class.getName());
 
 
@@ -33,9 +37,27 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
         return envVars;
     }
 
+    public static void runGroovyScript(AbstractBuild build,  BuildListener listener, String script) {
+        Map<String, String> envVars = getEnvVars(build, listener);
+
+        GroovyShell shell = new GroovyShell();
+        shell.setVariable("out", listener.getLogger());
+
+        for (Map.Entry<String, String> entry : envVars.entrySet()) {
+            shell.setVariable("$" + entry.getKey(), entry.getValue());
+        }
+
+        Object shellOutput = shell.evaluate(script);
+        // Need to check shellOutput for boolean, number or null
+    }
+
     @Override
     public void makeBuildVariables(AbstractBuild build, Map<String, String> variables) {
-        variables.put("buildEventGroovyScript", getGroovyString());
+        variables.put("buildStartEventGroovyScript", getBuildStartGroovyScript());
+        variables.put("buildPreScmEventGroovyScript", getPreScmGroovyScript());
+        variables.put("buildStepsStartEventGroovyScript", getBuildStepsStartGroovyScript());
+        variables.put("buildStepsFinishEventGroovyScript", getBuildStepsFinishGroovyScript());
+        variables.put("buildFinishEventGroovyScript", getBuildFinishGroovyScript());
     }
 
     @Override
@@ -68,29 +90,54 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
             builder.append(" | ");
         }
 
-        logger.severe("2. preCheckout: " + builder.toString());
+        logger.fine("Build Events Handler at Pre SCM Checkout: Running Groovy Script");
+        runGroovyScript(build, listener, getPreScmGroovyScript());
 
-        GroovyShell shell = new GroovyShell();
-        shell.setVariable("out", listener.getLogger());
+//        GroovyShell shell = new GroovyShell();
+//        shell.setVariable("out", listener.getLogger());
+//
+//        for (Map.Entry<String, String> entry : envVars.entrySet()) {
+//            shell.setVariable("$" + entry.getKey(), entry.getValue());
+//        }
+//
+//        Object shellOutput = shell.evaluate(this.getGroovyString());
 
-        for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            shell.setVariable("$" + entry.getKey(), entry.getValue());
-        }
 
-        Object shellOutput = shell.evaluate(this.getGroovyString());
-
-        // Need to check shellOutput for boolean, number or null
     }
 
     @DataBoundConstructor
     public AbstractBuildEventsWrapper(
-            String groovyString
+            String buildStartGroovyScript,
+            String preScmGroovyScript,
+            String buildStepsStartGroovyScript,
+            String buildStepsFinishGroovyScript,
+            String buildFinishGroovyScript
             ) {
-        this.groovyString = groovyString;
+        this.buildStartGroovyScript = buildStartGroovyScript;
+        this.preScmGroovyScript = preScmGroovyScript;
+        this.buildStepsStartGroovyScript = buildStepsStartGroovyScript;
+        this.buildStepsFinishGroovyScript = buildStepsFinishGroovyScript;
+        this.buildFinishGroovyScript = buildFinishGroovyScript;
     }
 
-    public String getGroovyString() {
-        return groovyString == null ? "" : groovyString;
+    public String getBuildStartGroovyScript() {
+        return buildStartGroovyScript == null ? "" : buildStartGroovyScript;
+    }
+
+    public String getPreScmGroovyScript() {
+        return preScmGroovyScript == null ? "" : preScmGroovyScript;
+    }
+
+    public String getBuildStepsStartGroovyScript() {
+        return buildStepsStartGroovyScript == null ? "" : buildStepsStartGroovyScript;
+    }
+
+    public String getBuildStepsFinishGroovyScript() {
+        return buildStepsFinishGroovyScript == null ? "" : buildStepsFinishGroovyScript;
+    }
+
+    public String getBuildFinishGroovyScript() {
+        return buildFinishGroovyScript == null ? "" : buildFinishGroovyScript;
     }
 
     @Extension
@@ -98,7 +145,7 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
 
         @Override
         public String getDisplayName() {
-            return "Set Build Environment Event";
+            return "Set Build Environment Events";
         }
     }
 
