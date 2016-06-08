@@ -37,7 +37,7 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
         return envVars;
     }
 
-    public static void runGroovyScript(AbstractBuild build,  BuildListener listener, String script) {
+    public static void runGroovyScript(AbstractBuild build, TaskListener listener, String script) {
         Map<String, String> envVars = getEnvVars(build, listener);
 
         GroovyShell shell = new GroovyShell();
@@ -62,19 +62,14 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
 
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        Map<String, String> envVars = getEnvVars(build, listener);
-        StringBuilder builder = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            builder.append(entry.getKey() + ":" + entry.getValue());
-            builder.append(" | ");
-        }
-
-        logger.severe("1. setUp: " + builder.toString());
+        listener.getLogger().println("Build Events Handler at Build Steps Start: Running Groovy Script");
+        runGroovyScript(build, listener, getBuildStepsStartGroovyScript());
 
         return new Environment() {
             @Override
             public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
+                listener.getLogger().println("Build Events Handler at Build Steps Finish: Running Groovy Script");
+                runGroovyScript(build, listener, getBuildStepsFinishGroovyScript());
                 return true;
             }
         };
@@ -82,27 +77,8 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
 
     @Override
     public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        Map<String, String> envVars = getEnvVars(build, listener);
-        StringBuilder builder = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : envVars.entrySet()) {
-            builder.append(entry.getKey() + ":" + entry.getValue());
-            builder.append(" | ");
-        }
-
-        logger.fine("Build Events Handler at Pre SCM Checkout: Running Groovy Script");
+        listener.getLogger().println("Build Events Handler at Pre SCM Checkout: Running Groovy Script");
         runGroovyScript(build, listener, getPreScmGroovyScript());
-
-//        GroovyShell shell = new GroovyShell();
-//        shell.setVariable("out", listener.getLogger());
-//
-//        for (Map.Entry<String, String> entry : envVars.entrySet()) {
-//            shell.setVariable("$" + entry.getKey(), entry.getValue());
-//        }
-//
-//        Object shellOutput = shell.evaluate(this.getGroovyString());
-
-
     }
 
     @DataBoundConstructor
@@ -148,6 +124,4 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
             return "Set Build Environment Events";
         }
     }
-
-
 }
