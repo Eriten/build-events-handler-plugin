@@ -34,7 +34,9 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException {
 
+
         // Event hook before build steps start: Run Groovy Script
+        logger.fine(build.getFullDisplayName() + " Running Groovy Script Before Build Steps");
         listener.getLogger().println(
                 BuildEventsHandler.getLogString("Before Build Steps", "Running Groovy Script")
         );
@@ -46,6 +48,7 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
                     throws IOException, InterruptedException {
 
                 // Event hook after build steps finish: Run Groovy Script
+                logger.fine(build.getFullDisplayName() + " Running Groovy Script After Build Steps");
                 listener.getLogger().println(
                         BuildEventsHandler.getLogString("After Build Steps", "Running Groovy Script")
                 );
@@ -59,6 +62,7 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
             throws IOException, InterruptedException {
 
         // Event hook before SCM checkout: Run Groovy Script
+        logger.fine(build.getFullDisplayName() + " Running Groovy Script Before SCM Checkout");
         listener.getLogger().println(
                 BuildEventsHandler.getLogString("Before SCM Checkout", "Running Groovy Script")
         );

@@ -32,21 +32,40 @@ class BuildEventsHandler {
         importCustomizer.addImports( Unirest.class.getName() );
         importCustomizer.addImports( HttpResponse.class.getName() );
         importCustomizer.addImports( JsonNode.class.getName() );
-        CompilerConfiguration cc = new CompilerConfiguration();
-        cc.addCompilationCustomizers(importCustomizer);
+        CompilerConfiguration compilerConfig = new CompilerConfiguration();
+        compilerConfig.addCompilationCustomizers(importCustomizer);
 
         // Load Groovy classes and Use Groovy Compiler from Jenkins Master
         @Nonnull ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
 
         Map<Object, Object> binding = new HashMap<Object, Object>();
-        GroovyShell shell = new GroovyShell(cl, new Binding(binding), cc);
-        shell.setVariable("out", listener.getLogger());
+        binding.put("out", listener.getLogger()); // Setting System.out to Jenkins Console Log
+        GroovyShell shell = new GroovyShell(cl, new Binding(binding), compilerConfig);
 
         for (Map.Entry<String, String> entry : envVars.entrySet()) {
             shell.setVariable("$" + entry.getKey(), entry.getValue());
         }
 
-        Object shellOutput = shell.evaluate(script);
+        String shellRunner =    "System.setOut(out)\n" +
+                                "System.setErr(out)\n" +
+                                "class ShellRunner {\n" +
+                                "    static void run(String cmd) {\n" +
+                                "        def stdout = new StringBuilder()\n" +
+                                "        def stderr = new StringBuilder()\n" +
+                                "        println(\"Running cmd: ${cmd}\")\n" +
+                                "        def process = cmd.execute()\n" +
+                                "        process.consumeProcessOutput(stdout, stderr)\n" +
+                                "        process.waitForOrKill(300000)\n" +
+                                "        println(\"stdout> ${stdout}\")\n" +
+                                "        def exitCode = process.exitValue()\n" +
+                                "        if(exitCode != 0) {\n" +
+                                "            System.err.println(\"stderr> ${stderr}\")\n" +
+                                "            throw new RuntimeException(\"${cmd} returned ${exitCode}\")\n" +
+                                "        }\n" +
+                                "    }\n" +
+                                "}\n";
+
+        Object shellOutput = shell.evaluate(shellRunner + script);
 
         if (shellOutput instanceof Boolean) {
             return (Boolean) shellOutput;
