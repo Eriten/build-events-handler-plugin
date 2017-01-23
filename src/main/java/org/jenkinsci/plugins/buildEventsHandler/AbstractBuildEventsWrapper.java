@@ -8,9 +8,7 @@ import hudson.tasks.BuildWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AbstractBuildEventsWrapper extends BuildWrapper {
@@ -30,6 +28,15 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
         variables.put("buildFinishEventGroovyScript", getBuildFinishGroovyScript());
     }
 
+    /**
+     * Event Hook for "Before Build Steps Start"
+     * @param build Jenkins Build
+     * @param launcher
+     * @param listener Build listener for logging to Console Log
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException {
@@ -43,6 +50,14 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
         BuildEventsHandler.runGroovyScript(build, listener, getBuildStepsStartGroovyScript());
 
         return new Environment() {
+            /**
+             * Event Hook for "After Build Steps Finish" or "Before Build Publishers Start"
+             * @param build Jenkins Build
+             * @param listener Build listener for logging to Console Log
+             * @return
+             * @throws IOException
+             * @throws InterruptedException
+             */
             @Override
             public boolean tearDown(AbstractBuild build, BuildListener listener)
                     throws IOException, InterruptedException {
@@ -57,6 +72,14 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
         };
     }
 
+    /**
+     * Event Hook for "Before SCM Checkout"
+     * @param build Jenkins Build
+     * @param launcher
+     * @param listener Build listener for logging to Console Log
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener)
             throws IOException, InterruptedException {
@@ -68,6 +91,7 @@ public class AbstractBuildEventsWrapper extends BuildWrapper {
         );
         BuildEventsHandler.runGroovyScript(build, listener, getPreScmGroovyScript());
     }
+
 
     @DataBoundConstructor
     public AbstractBuildEventsWrapper(
