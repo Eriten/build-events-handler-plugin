@@ -48,20 +48,18 @@ class BuildEventsHandler {
 
         String shellRunner =    "System.setOut(out)\n" +
                                 "System.setErr(out)\n" +
-                                "class ShellRunner {\n" +
-                                "    static void run(String cmd) {\n" +
-                                "        def stdout = new StringBuilder()\n" +
-                                "        def stderr = new StringBuilder()\n" +
-                                "        println(\"Running cmd: ${cmd}\")\n" +
-                                "        def process = cmd.execute()\n" +
-                                "        process.consumeProcessOutput(stdout, stderr)\n" +
-                                "        process.waitForOrKill(300000)\n" +
-                                "        println(\"stdout> ${stdout}\")\n" +
-                                "        def exitCode = process.exitValue()\n" +
-                                "        if(exitCode != 0) {\n" +
-                                "            System.err.println(\"stderr> ${stderr}\")\n" +
-                                "            throw new RuntimeException(\"${cmd} returned ${exitCode}\")\n" +
-                                "        }\n" +
+                                "static void runShCmd(String cmd) {\n" +
+                                "    def stdout = new StringBuilder()\n" +
+                                "    def stderr = new StringBuilder()\n" +
+                                "    println(\"Running cmd: ${cmd}\")\n" +
+                                "    def process = cmd.execute()\n" +
+                                "    process.consumeProcessOutput(stdout, stderr)\n" +
+                                "    process.waitForOrKill(300000)\n" +
+                                "    println(\"stdout> ${stdout}\")\n" +
+                                "    def exitCode = process.exitValue()\n" +
+                                "    if(exitCode != 0) {\n" +
+                                "        System.err.println(\"stderr> ${stderr}\")\n" +
+                                "        throw new RuntimeException(\"${cmd} returned ${exitCode}\")\n" +
                                 "    }\n" +
                                 "}\n";
 

@@ -6,13 +6,9 @@ A Jenkins plugin to handle different events throughout a Jenkins build.
 No. This plugin is still in development and still need refinement and extensive testing
 
 2. What are the features you're trying to achieve before rolling out?
-    1. Ability to run groovy script (Only support Groovy and Java core libraries) at each build event
-    2. An option for advanced support of Matrix Job (Running Groovy scripts in the Matrix build and
+    1. An option for advanced support of Matrix Job (Running Groovy scripts in the Matrix build and
     configuration levels separately)
-    3. An option for failing the build if the groovy script returns a non zero status
-    4. Job DSL support
-    5. Install Groovy on the node automatically if Groovy is not installed
-    6. This plugin will only be supported for Jenkins v1.645+
+    2. Job DSL support
 
 3. What works at the moment?
     * Added an option to Build Wrapper that allows you to record groovy scripts at various build events
@@ -23,9 +19,13 @@ No. This plugin is still in development and still need refinement and extensive 
         * Before Build Steps start
         * After Build Steps finish (Before Build Publisher Starts)
         * After a Build finishes
+    * Failing the build if the groovy script returns a non zero status
+    * When the groovy scripts run, they only run on Jenkins master
+    * This plugin will only be supported for Jenkins v1.645+
+    * Imported REST API support through [Unirest](http://unirest.io/java.html)
+    * Imported Shell Helper Support to run Shell cmds easier. Simply use `runCmd("cmd")`
 
 4. What are you working on?
-    * [Bug] Allowing Shell commands to be executes from the embedded Groovy Shell easily
     * [Bug] Check the exit code from the groovy script. Fail the build if the exit code is non zero
     * [Feature] An option for advanced support of Matrix Job (Running Groovy scripts in the Matrix build and
       configuration levels separately)
